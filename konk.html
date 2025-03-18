@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конкурсы</title>
+    <link rel="stylesheet" href="konk.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Выберите конкурс</h1>
+        <div id="contests">
+            <button class="contest-btn" data-contest="Программирование">Программирование</button>
+            <button class="contest-btn" data-contest="Веб-разработка">Веб-разработка</button>
+            <button class="contest-btn" data-contest="Кибербезопасность">Кибербезопасность</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJpwKn9VaRLvKFk2bQiy62a58m_MNrLbM",
+            authDomain: "collage-865e9.firebaseapp.com",
+            databaseURL: "https://collage-865e9-default-rtdb.firebaseio.com",
+            projectId: "collage-865e9",
+            storageBucket: "collage-865e9.appspot.com",
+            messagingSenderId: "352289967594",
+            appId: "1:352289967594:web:0d697b16dab912c8c13693",
+            measurementId: "G-L4JC4BLB9L"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.querySelectorAll(".contest-btn").forEach(button => {
+            button.addEventListener("click", async function () {
+                const contestName = this.getAttribute("data-contest");
+
+                // Получаем имя пользователя
+                const userRef = ref(database, "users");
+                const snapshot = await get(userRef);
+                let user = null;
+
+                snapshot.forEach(childSnapshot => {
+                    user = childSnapshot.val();
+                });
+
+                if (!user) {
+                    alert("Ошибка: пользователь не найден!");
+                    return;
+                }
+
+                // Записываем участие в конкурсе
+                push(ref(database, 'contests/' + contestName), {
+                    name: user.name,
+                    group: user.group
+                }).then(() => {
+                    alert(`Вы записаны в конкурс: ${contestName}`);
+                }).catch((error) => {
+                    alert("Ошибка: " + error.message);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
