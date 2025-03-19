@@ -1,6 +1,5 @@
-// Подключение Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
 // Конфигурация Firebase
 const firebaseConfig = {
@@ -17,26 +16,82 @@ const firebaseConfig = {
 // Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const contestList = document.getElementById("contestList");
 
-// Обработка формы регистрации
-document.getElementById("registerForm").addEventListener("submit", function (event) {
-    event.preventDefault();
+// Функция загрузки данных
+function loadContests() {
+    onValue(ref(database, "contests"), (snapshot) => {
+        contestList.innerHTML = "";
+        snapshot.forEach(contestSnapshot => {
+            const contestName = contestSnapshot.key;
+            const div = document.createElement("div");
+            div.innerHTML = `<h2>${contestName}</h2>`;
+            
+            contestSnapshot.forEach(participantSnapshot => {
+                const participant = participantSnapshot.val();
+                const participantKey = participantSnapshot.key; // Уникальный ключ участника
+                div.innerHTML += `
+                    <p>${participant.name} (${participant.group}) 
+                        <button class="delete-btn" 
+                            data-contest="${contestName}" 
+                            data-participant-key="${participantKey}">
+                            Удалить
+                        </button>
+                    </p>`;
+            });
 
-    const name = document.querySelector('input[name="name"]').value.trim();
-    const group = document.querySelector('input[name="group"]').value.trim();
+            contestList.appendChild(div);
+        });
+    });
+}
 
-    if (!name || !group) {
-        alert("Заполни все поля!");
+// Функция удаления участника
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-btn')) {
+        const contest = event.target.dataset.contest;
+        const participantKey = event.target.dataset.participantKey;
+
+        const userRef = ref(database, `contests/${contest}/${participantKey}`);
+        remove(userRef)
+            .then(() => {
+                console.log(`Участник ${participantKey} из ${contest} удален`);
+                setTimeout(() => {
+                    window.location.replace("konk.html"); // Перенаправление через 0.5 секунды
+                }, 500);
+            })
+            .catch((error) => {
+                console.error("Ошибка удаления:", error);
+            });
+    }
+});
+
+// Функция добавления участника
+document.getElementById("addParticipantBtn")?.addEventListener("click", () => {
+    const contestName = document.getElementById("contestName").value.trim();
+    const name = document.getElementById("nameInput").value.trim();
+    const group = document.getElementById("groupInput").value.trim();
+
+    if (!contestName || !name || !group) {
+        alert("Заполните все поля!");
         return;
     }
 
-    // Сохраняем пользователя
-    set(ref(database, 'users/' + name), {
-        name: name,
-        group: group
-    }).then(() => {
-        window.location.href = "konk.html"; // Переход к конкурсам
-    }).catch((error) => {
-        alert("Ошибка: " + error.message);
-    });
+    const contestRef = ref(database, `contests/${contestName}`);
+    const newParticipantRef = push(contestRef); // Создает уникальный ключ
+
+    set(newParticipantRef, { name, group })
+        .then(() => {
+            console.log("Участник добавлен");
+            document.getElementById("nameInput").value = "";
+            document.getElementById("groupInput").value = "";
+            setTimeout(() => {
+                window.location.replace("konk.html"); // Перенаправление через 0.5 секунды
+            }, 500);
+        })
+        .catch((error) => {
+            console.error("Ошибка добавления:", error);
+        });
 });
+
+// Загрузка списка конкурсов при запуске
+loadContests();
