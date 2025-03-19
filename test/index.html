@@ -4,31 +4,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация</title>
-    <link rel="stylesheet" href="index.css">
+    <title>Вход и регистрация</title>
+    <style>
+        /* Общие стили */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #bb86fc;
+        }
+
+        input {
+            width: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            background-color: #333;
+        }
+
+        button {
+            width: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #bb86fc;
+            color: #121212;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #9c27b0;
+        }
+
+        /* Разделение секций */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        /* Анимация загрузки */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        body {
+            animation: fadeIn 1s ease-in-out;
+        }
+    </style>
+    <script type="module">
+        // Подключение Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJpwKn9VaRLvKFk2bQiy62a58m_MNrLbM",
+            authDomain: "collage-865e9.firebaseapp.com",
+            databaseURL: "https://collage-865e9-default-rtdb.firebaseio.com",
+            projectId: "collage-865e9",
+            storageBucket: "collage-865e9.appspot.com",
+            messagingSenderId: "352289967594",
+            appId: "1:352289967594:web:0d697b16dab912c8c13693",
+            measurementId: "G-L4JC4BLB9L"
+        };
+
+        // Инициализация Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Функция сохранения данных
+        function registerUser() {
+            const firstName = document.getElementById("firstName").value;
+            const lastName = document.getElementById("lastName").value;
+            const group = document.getElementById("group").value;
+
+            if (firstName && lastName && group) {
+                set(ref(database, 'users/' + firstName + "_" + lastName), {
+                    firstName: firstName,
+                    lastName: lastName,
+                    group: group
+                }).then(() => {
+                    window.location.href = "competitions.html"; // Перенаправление
+                }).catch((error) => {
+                    alert("Ошибка при регистрации: " + error);
+                });
+            } else {
+                alert("Заполните все поля!");
+            }
+        }
+
+        // Функция проверки кода доступа
+        function checkCode() {
+            const accessCode = document.getElementById("accessCode").value;
+            if (accessCode === "8985") {
+                window.location.href = "all.html"; // Перенаправление
+            } else {
+                alert("Неверный код доступа!");
+            }
+        }
+
+        // Привязка функций к кнопкам
+        window.onload = function () {
+            document.getElementById("registerBtn").addEventListener("click", registerUser);
+            document.getElementById("loginBtn").addEventListener("click", checkCode);
+        };
+    </script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Регистрация</h1>
-        <form id="registerForm">
-            <input type="text" name="name" placeholder="Ваше имя" required>
-            <input type="text" name="group" placeholder="Группа" required>
-            <input type="submit" value="Зарегистрироваться">
-        </form>
-        <input type="text" id="codeInput" placeholder="Введите код">
+    <div class="section">
+        <h2>Регистрация</h2>
+        <input type="text" id="firstName" placeholder="Имя">
+        <input type="text" id="lastName" placeholder="Фамилия">
+        <input type="text" id="group" placeholder="Группа">
+        <button id="registerBtn">Регистрация</button>
     </div>
-    <script type="module" src="app.js"></script>
-    <script>
-        document.getElementById('codeInput').addEventListener('keydown', function (event) {
-            if (event.key === 'Enter') {
-                const code = this.value;
-                if (code === '8985') {
-                    window.location.href = 'all.html';
-                }
-            }
-        });
-    </script>
+
+    <div class="section">
+        <h2>Вход по коду</h2>
+        <input type="password" id="accessCode" placeholder="Введите код">
+        <button id="loginBtn">Войти</button>
+    </div>
 </body>
 
 </html>

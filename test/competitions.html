@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конкурсы</title>
+    <style>
+        /* Общие стили */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #bb86fc;
+        }
+
+        .competition {
+            width: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #1e1e1e;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .competition:hover {
+            background-color: #333;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #bb86fc;
+            color: #121212;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #9c27b0;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJpwKn9VaRLvKFk2bQiy62a58m_MNrLbM",
+            authDomain: "collage-865e9.firebaseapp.com",
+            databaseURL: "https://collage-865e9-default-rtdb.firebaseio.com",
+            projectId: "collage-865e9",
+            storageBucket: "collage-865e9.appspot.com",
+            messagingSenderId: "352289967594",
+            appId: "1:352289967594:web:0d697b16dab912c8c13693",
+            measurementId: "G-L4JC4BLB9L"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        function registerForCompetition(competitionName) {
+            const userKey = localStorage.getItem("userKey");
+            if (!userKey) {
+                alert("Сначала зарегистрируйтесь!");
+                return;
+            }
+
+            // Сохраняем данные о регистрации в Firebase
+            set(ref(database, `registrations/${userKey}/${competitionName}`), {
+                competition: competitionName,
+                status: "Зарегистрирован"
+            }).then(() => {
+                alert(`Вы успешно зарегистрировались на конкурс "${competitionName}"!`);
+            }).catch((error) => {
+                alert("Ошибка при регистрации: " + error);
+            });
+        }
+
+        window.onload = function () {
+            const competitions = [
+                "Программирование",
+                "Веб-разработка",
+                "Искусственный интеллект",
+                "Кибербезопасность"
+            ];
+
+            const container = document.getElementById("competitionsContainer");
+            competitions.forEach((competition) => {
+                const div = document.createElement("div");
+                div.className = "competition";
+                div.innerHTML = `
+                    <h3>${competition}</h3>
+                    <button onclick="registerForCompetition('${competition}')">Зарегистрироваться</button>
+                `;
+                container.appendChild(div);
+            });
+
+            // Проверка, есть ли userKey в localStorage
+            const userKey = localStorage.getItem("userKey");
+            if (!userKey) {
+                alert("Сначала зарегистрируйтесь на главной странице!");
+                window.location.href = "index.html"; // Перенаправление на главную страницу
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <h2>Конкурсы по IT</h2>
+    <div id="competitionsContainer"></div>
+</body>
+
+</html>

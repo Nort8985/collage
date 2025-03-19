@@ -4,19 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Участники конкурсов</title>
-    <link rel="stylesheet" href="all.css">
-</head>
+    <title>Участники</title>
+    <style>
+        /* Общие стили */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
 
-<body>
-    <div class="container">
-        <h1>Участники конкурсов</h1>
-        <div id="contestList"></div>
-    </div>
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #bb86fc;
+        }
 
+        .participant {
+            width: 300px;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #1e1e1e;
+            text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        .participant:hover {
+            background-color: #333;
+        }
+
+        .participant h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #bb86fc;
+        }
+
+        .participant p {
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCJpwKn9VaRLvKFk2bQiy62a58m_MNrLbM",
@@ -31,47 +67,53 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const contestList = document.getElementById("contestList");
 
-        onValue(ref(database, "contests"), (snapshot) => {
-            contestList.innerHTML = "";
-            snapshot.forEach(contestSnapshot => {
-                const contestName = contestSnapshot.key;
-                const div = document.createElement("div");
-                div.innerHTML = `<h2>${contestName}</h2>`;
-                contestSnapshot.forEach(participantSnapshot => {
-                    const participantKey = participantSnapshot.key; // Получаем уникальный ключ участника
-                    const participant = participantSnapshot.val();
-                    div.innerHTML += `
-                        <p>
-                            ${participant.name} (${participant.group}) 
-                            <button class="delete-btn" data-contest="${contestName}" data-key="${participantKey}">
-                                Удалить
-                            </button>
-                        </p>
-                    `;
+        window.onload = function () {
+            const container = document.getElementById("participantsContainer");
+
+            // Получаем данные из базы данных
+            const usersRef = ref(database, "users");
+            const registrationsRef = ref(database, "registrations");
+
+            onValue(usersRef, (usersSnapshot) => {
+                onValue(registrationsRef, (registrationsSnapshot) => {
+                    const users = usersSnapshot.val();
+                    const registrations = registrationsSnapshot.val();
+
+                    container.innerHTML = ""; // Очищаем контейнер
+
+                    if (!users) {
+                        container.innerHTML = "<p>Нет зарегистрированных пользователей.</p>";
+                        return;
+                    }
+
+                    for (const userKey in users) {
+                        const user = users[userKey];
+                        const userRegistrations = registrations?.[userKey] || {};
+
+                        // Формируем список конкурсов
+                        const competitionsList = Object.keys(userRegistrations).length > 0
+                            ? Object.keys(userRegistrations).join(", ")
+                            : "Нет регистраций";
+
+                        const div = document.createElement("div");
+                        div.className = "participant";
+                        div.innerHTML = `
+                            <h3>${user.firstName} ${user.lastName}</h3>
+                            <p>Группа: ${user.group}</p>
+                            <p>Конкурсы: ${competitionsList}</p>
+                        `;
+                        container.appendChild(div);
+                    }
                 });
-                contestList.appendChild(div);
             });
-        });
-
-        document.addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-btn')) {
-                const contest = event.target.dataset.contest;
-                const participantKey = event.target.dataset.key;
-
-                // Удаление из Firebase
-                const participantRef = ref(database, `contests/${contest}/${participantKey}`);
-                remove(participantRef)
-                    .then(() => {
-                        console.log(`Участник из ${contest} удален`);
-                    })
-                    .catch((error) => {
-                        console.error("Ошибка удаления:", error);
-                    });
-            }
-        });
+        };
     </script>
+</head>
+
+<body>
+    <h2>Участники и их конкурсы</h2>
+    <div id="participantsContainer"></div>
 </body>
 
 </html>
