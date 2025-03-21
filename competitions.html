@@ -75,6 +75,13 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
+        const competitionPages = {
+            "Программирование": "test1.html",
+            "Веб-разработка": "test2.html",
+            "Искусственный интеллект": "test3.html",
+            "Кибербезопасность": "test4.html"
+        };
+
         function registerForCompetition(competitionName) {
             const userKey = localStorage.getItem("userKey");
             if (!userKey) {
@@ -85,36 +92,34 @@
             set(ref(database, `registrations/${userKey}/${competitionName}`), {
                 competition: competitionName,
                 status: "Зарегистрирован"
-            })
-                .then(() => {
-                    alert(`Вы успешно зарегистрировались на конкурс "${competitionName}"!`);
-                })
-                .catch((error) => {
-                    alert("Ошибка при регистрации: " + error);
-                });
+            }).then(() => {
+                alert(`Вы успешно зарегистрировались на конкурс!`);
+
+                const page = competitionPages[competitionName];
+                if (page) {
+                    window.location.assign(page); // Изменил на assign, это надежнее
+                }
+            }).catch((error) => {
+                alert("Ошибка при регистрации: " + error);
+            });
         }
 
-        window.registerForCompetition = registerForCompetition; // Делаем функцию глобальной
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const competitions = [
-                "Программирование",
-                "Веб-разработка",
-                "Искусственный интеллект",
-                "Кибербезопасность"
-            ];
-
+        window.onload = function () {
             const container = document.getElementById("competitionsContainer");
-            competitions.forEach((competition) => {
+            Object.keys(competitionPages).forEach((competition) => {
                 const div = document.createElement("div");
                 div.className = "competition";
                 div.innerHTML = `
                     <h3>${competition}</h3>
-                    <button onclick="registerForCompetition('${competition}')">Зарегистрироваться</button>
+                    <button>Зарегистрироваться</button>
                 `;
+
+                const button = div.querySelector("button");
+                button.addEventListener("click", () => registerForCompetition(competition));
+
                 container.appendChild(div);
             });
-        });
+        };
     </script>
 </head>
 

@@ -44,10 +44,12 @@ input[type="submit"]:hover {
   .container {
     width: 95%;
   }
+
   h1 {
     font-size: 1.5em;
   }
 }
+
 body {
   font-family: sans-serif;
   background-color: #222;

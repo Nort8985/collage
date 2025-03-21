@@ -61,9 +61,11 @@ h1 {
   .container {
     width: 95%;
   }
+
   #contestList div {
     width: 95%;
   }
+
   .delete-btn {
     font-size: 12px;
   }
