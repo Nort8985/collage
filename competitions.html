@@ -82,18 +82,21 @@
                 return;
             }
 
-            // Сохраняем данные о регистрации в Firebase
             set(ref(database, `registrations/${userKey}/${competitionName}`), {
                 competition: competitionName,
                 status: "Зарегистрирован"
-            }).then(() => {
-                alert(`Вы успешно зарегистрировались на конкурс "${competitionName}"!`);
-            }).catch((error) => {
-                alert("Ошибка при регистрации: " + error);
-            });
+            })
+                .then(() => {
+                    alert(`Вы успешно зарегистрировались на конкурс "${competitionName}"!`);
+                })
+                .catch((error) => {
+                    alert("Ошибка при регистрации: " + error);
+                });
         }
 
-        window.onload = function () {
+        window.registerForCompetition = registerForCompetition; // Делаем функцию глобальной
+
+        document.addEventListener("DOMContentLoaded", () => {
             const competitions = [
                 "Программирование",
                 "Веб-разработка",
@@ -111,14 +114,7 @@
                 `;
                 container.appendChild(div);
             });
-
-            // Проверка, есть ли userKey в localStorage
-            const userKey = localStorage.getItem("userKey");
-            if (!userKey) {
-                alert("Сначала зарегистрируйтесь на главной странице!");
-                window.location.href = "index.html"; // Перенаправление на главную страницу
-            }
-        };
+        });
     </script>
 </head>
 
