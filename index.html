@@ -107,11 +107,11 @@
             }
 
             try {
-                const userKey = `${firstName.value}_${lastName.value}`;
+                const userKey = `${firstName.value}_${lastName.value}_${group.value}`;
                 await set(ref(database, "users/" + userKey), {
                     firstName: firstName.value,
                     lastName: lastName.value,
-                    group: group.value
+                    group: group.value,
                 });
                 localStorage.setItem("userKey", userKey);
                 window.location.href = "competitions.html";
